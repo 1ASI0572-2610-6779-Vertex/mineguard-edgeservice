@@ -5,11 +5,9 @@ Defines the ``heart_rate_readings`` table that persists
 synchronization bookkeeping fields (``synced``, ``cloud_id``).
 """
 from peewee import Model, AutoField, FloatField, CharField, DateTimeField, BooleanField, IntegerField
-
 from shared.infrastructure.database import db
 
-
-class HeartRateReading(Model):
+class TelemetryReadingModel(Model):
     """ORM mapping for the ``heart_rate_readings`` table.
 
     Attributes:
@@ -24,10 +22,14 @@ class HeartRateReading(Model):
     id = AutoField()
     device_id = CharField()
     bpm = FloatField()
+    distance_cm = FloatField()
+    collision = BooleanField()
+    lat = FloatField(null=True)
+    lng = FloatField(null=True)
     created_at = DateTimeField()
     synced = BooleanField(default=False)
     cloud_id = IntegerField(null=True)
 
     class Meta:
         database = db
-        table_name = 'heart_rate_readings'
+        table_name = 'telemetry_readings'
