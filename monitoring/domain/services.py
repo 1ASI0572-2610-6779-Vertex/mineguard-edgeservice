@@ -5,37 +5,34 @@ well-formed :class:`~monitoring.domain.entities.HeartRateReading`, enforcing the
 bounded context invariants (plausible BPM range, valid ISO-8601 timestamp).
 """
 from datetime import datetime, timezone
-
 from dateutil.parser import parse
+from monitoring.domain.entities import TelemetryReading
 
-from monitoring.domain.entities import HeartRateReading
 
-
-class HeartRateReadingService:
-    """Domain service responsible for creating valid heart-rate readings."""
+class TelemetryReadingService:
+    """Domain service enforcing business rules on raw sensor data."""
 
     @staticmethod
-    def create_reading(device_id: str, bpm: float, created_at: str | None) -> HeartRateReading:
-        """Validate raw sensor data and build a new :class:`HeartRateReading`.
-
-        Invariants:
-            * ``bpm`` is coerced to ``float`` and must fall within [0, 200].
-            * ``created_at`` is parsed and normalized to UTC; when ``None`` the
-              current UTC time is used.
-
-        Raises:
-            ValueError: If ``bpm`` is not numeric, is out of range, or
-                ``created_at`` is not a valid ISO-8601 string.
-        """
+    def create_reading(device_id: str, bpm: float, distance_cm: float, collision: bool,
+                       lat: float | None, lng: float | None, created_at: str | None) -> TelemetryReading:
         try:
             bpm = float(bpm)
-            if not (0 <= bpm <= 200):
-                raise ValueError("Invalid BPM value")
+            distance_cm = float(distance_cm)
+            collision = bool(collision)
+            lat = float(lat) if lat is not None else None
+            lng = float(lng) if lng is not None else None
+
+            if not (0 <= bpm <= 250):
+                raise ValueError("Invalid BPM value (must be 0-250)")
+            if distance_cm < 0:
+                raise ValueError("Invalid distance value (must be >= 0)")
+
             if created_at:
                 parsed_created_at = parse(created_at).astimezone(timezone.utc)
             else:
                 parsed_created_at = datetime.now(timezone.utc)
-        except (ValueError, TypeError):
-            raise ValueError("Invalid data format")
 
-        return HeartRateReading(device_id, bpm, parsed_created_at)
+        except (ValueError, TypeError):
+            raise ValueError("Invalid telemetry data format")
+
+        return TelemetryReading(device_id, bpm, distance_cm, collision, lat, lng, parsed_created_at)
