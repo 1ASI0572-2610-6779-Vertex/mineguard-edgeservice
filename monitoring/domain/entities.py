@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Optional
 
 
-class HeartRateReading:
+class TelemetryReading:
     """Aggregate root representing a single heart-rate reading.
 
     Captures a beats-per-minute measurement taken by a smart-band device at a
@@ -25,11 +25,16 @@ class HeartRateReading:
         cloud_id (int | None): Id assigned by the MineGuard platform on sync.
     """
 
-    def __init__(self, device_id: str, bpm: float, created_at: datetime,
+    def __init__(self, device_id: str, bpm: float, distance_cm: float, collision: bool,
+                 lat: Optional[float], lng: Optional[float], created_at: datetime,
                  id: int = None, synced: bool = False, cloud_id: Optional[int] = None):
         self.id = id
         self.device_id = device_id
         self.bpm = bpm
+        self.distance_cm = distance_cm
+        self.collision = collision
+        self.lat = lat
+        self.lng = lng
         self.created_at = created_at
         self.synced = synced
         self.cloud_id = cloud_id
